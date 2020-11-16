@@ -60,7 +60,9 @@ class UserRoute extends Controller {
             router.get('/user/type/courier', super.user().fetchAllCourier),
             router.post('/courier/update/location', super.user().updateCourierLocation),
             router.post('/courier/logout', super.user().logout),
-            router.get('/verif', super.user().verifEmail)
+            router.get('/verif', super.user().verifEmail),
+            router.post('/update-device-token', super.user().updateDeviceToken),
+            router.post('/testing123', super.user().testing),
         ]
     }
 }

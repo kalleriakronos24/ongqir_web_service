@@ -5,9 +5,12 @@ import isPointWithinRadius from 'geolib/es/isPointWithinRadius';
 import findNearest from 'geolib/es/findNearest';
 import moment from 'moment';
 const socketIo = require('socket.io');
+import {
+    admin,
+    notification_options
+} from '../firebase/firebase-config';
 
-
-const addOrderToCourier = (res, db, dbUser, data, item, userid, pickupDetail, ongkir, brg, distance) => {
+const addOrderToCourier = (a, db, dbUser, data, item, userid, pickupDetail, ongkir, brg, distance) => {
 
     const Order = db;
     const User = dbUser;
@@ -70,10 +73,6 @@ const addOrderToCourier = (res, db, dbUser, data, item, userid, pickupDetail, on
         })
 }
 
-const emitOrderToCourier = () => {
-
-}
-
 class OrderController extends Model {
 
     async addOrder(req, res, next) {
@@ -90,14 +89,16 @@ class OrderController extends Model {
         const ongkirInRp = ongkir * (15 / 100);
 
         await User.findOne({ token: token }, async (err, result) => {
+
             let userObjID = result._id;
 
             if (result.canceled_from) {
 
                 console.log('user tidak dapat mengorder dari ke kurir id ', result.canceled_from);
-                await User.find({ _id: { $ne: result.canceled_from }, type: 'courier', "courier_info.status": false, "courier_info.balance": { $gte: ongkirInRp }, online: true, verified: true }, async (er, courierData) => {
+                await User.find({ _id: { $ne: result.canceled_from }, type: 'courier', "courier_info.status": false, "courier_info.balance": { $gte: ongkirInRp }, verified: true }, async (er, courierData) => {
 
                     if (courierData.length !== 0) {
+
                         const nearestCourier = findNearest({ latitude: pengirim.coords.latitude, longitude: pengirim.coords.longitude }, [...courierData.map((x, y) => x.courier_info.coords)]);
 
                         const { latitude, longitude } = nearestCourier;
@@ -106,13 +107,42 @@ class OrderController extends Model {
                         return User.findOne({ "courier_info.coords.latitude": latitude, "courier_info.coords.longitude": longitude }, {}, async (e, r) => {
                             // console.log('nearest courier Data ::: ', r);
 
-                            if (r) {
+                            if (Object.keys(r).length !== 0) {
+
+
+                                const notification_options = {
+                                    priority: "high",
+                                    timeToLive: 60 * 60 * 24
+                                };
+
+                                let message = {
+                                    data: {
+                                        title: 'Orderan Masuk',
+                                        subtext: moment().locale('id-ID').format('DD MMMM YYYY hh:mm'),
+                                        dari: result.fullname,
+                                        ongkir: String(ongkir),
+                                        km: String(distance),
+                                        barang: brg
+                                    }
+                                };
+
+
                                 addOrderToCourier(res, Order, User, r, penerima, userObjID, pengirim, ongkirz, brg, distance);
+
+                                admin.messaging().sendToDevice(r.device_token, message, notification_options)
+                                    .then(async res => {
+                                        console.log('successfully send to device ', r.device_token);
+                                    })
+                                    .catch(err => {
+                                        console.log('error :: ', err);
+                                    })
+
                                 return res.json({
                                     data: null,
                                     _id: r._id,
                                     token: r.token
                                 });
+
                             } else {
                                 return res.json({
                                     msg: 'no nearest courier found',
@@ -129,7 +159,7 @@ class OrderController extends Model {
                     }
                 })
             } else {
-                await User.find({ type: 'courier', "courier_info.status": false, "courier_info.balance": { $gte: ongkirInRp }, online: true, verified: true }, async (er, courierData) => {
+                await User.find({ type: 'courier', "courier_info.status": false, "courier_info.balance": { $gte: ongkirInRp }, verified: true }, async (er, courierData) => {
 
                     if (courierData.length !== 0) {
                         const nearestCourier = findNearest({ latitude: pengirim.coords.latitude, longitude: pengirim.coords.longitude }, [...courierData.map((x, y) => x.courier_info.coords)]);
@@ -140,13 +170,46 @@ class OrderController extends Model {
                         return User.findOne({ "courier_info.coords.latitude": latitude, "courier_info.coords.longitude": longitude }, {}, async (e, r) => {
                             // console.log('nearest courier Data ::: ', r);
 
-                            if (r) {
+                            if (Object.keys(r).length !== 0) {
+
+
+                                const notification_options = {
+                                    priority: "high",
+                                    timeToLive: 60 * 60 * 24
+                                };
+
+                                let message = {
+                                    data: {
+                                        title: 'Orderan Masuk',
+                                        subtext: moment().locale('id-ID').format('DD MMMM YYYY hh:mm'),
+                                        dari: result.fullname,
+                                        ongkir: String(ongkir),
+                                        km: String(distance),
+                                        barang: brg
+                                    }
+                                };
+
+
+                                console.log('COURIER DEVICE TOKEN', r.device_token);
+
                                 addOrderToCourier(res, Order, User, r, penerima, userObjID, pengirim, ongkirz, brg, distance);
+
+                                admin.messaging().sendToDevice(r.device_token, message, notification_options)
+                                    .then(async res => {
+                                        console.log('successfully send to device ', r.device_token);
+
+                                    })
+                                    .catch(err => {
+                                        console.log('error :: ', err);
+                                    })
+
                                 return res.json({
                                     data: null,
                                     _id: r._id,
                                     token: r.token
                                 });
+
+
                             } else {
                                 return res.json({
                                     msg: 'no nearest courier found',
@@ -178,26 +241,28 @@ class OrderController extends Model {
         await User.findOne({ token: token }, async (error, result) => {
 
             let count = 0;
-
+            let transaksi = 0;
             Order.aggregate([
                 {
                     $match: {
-                        "from": result._id
+                        "from": result._id,
+                        "status": true
                     }
-                },
-                {
-                    $unwind: "$item"
                 },
                 {
                     $group: {
                         "_id": null,
                         "count": {
                             $sum: 1
+                        },
+                        "transaksi": {
+                            $sum: "$ongkir"
                         }
                     }
                 }
-            ]).then(res => {
-                count = res[0].count;
+            ]).then(async res => {
+                await (count = res[0].count);
+                await (transaksi = res[0].transaksi);
             })
                 .catch(err => {
                     console.log('ada error')
@@ -205,11 +270,12 @@ class OrderController extends Model {
 
 
             if (result) {
-                await Order.find({ from: result._id, status: true }, (err, resu) => {
+                await Order.find({ from: result._id }, (err, resu) => {
                     return res.json({
                         items: resu,
                         user: result,
-                        count: count
+                        count: count,
+                        transaksi: transaksi
                     })
                 })
             } else {
@@ -229,7 +295,7 @@ class OrderController extends Model {
         await User.findOne({ token: token }, async (error, result) => {
 
             let count = 0;
-
+            let transaksi = 0;
             Order.aggregate([
                 {
                     $match: {
@@ -242,11 +308,15 @@ class OrderController extends Model {
                         "_id": null,
                         "count": {
                             $sum: 1
+                        },
+                        "transaksi": {
+                            $sum: "$ongkir"
                         }
                     }
                 }
-            ]).then(res => {
-                count = res[0].count;
+            ]).then(async res => {
+                await (count = res[0].count);
+                await (transaksi = res[0].transaksi);
             })
                 .catch(err => {
                     console.log('ada error')
@@ -254,11 +324,12 @@ class OrderController extends Model {
 
 
             if (result) {
-                await Order.find({ courier: result._id, status: true }, (err, resu) => {
+                await Order.find({ courier: result._id }, (err, resu) => {
                     return res.json({
                         items: resu,
                         data: result,
-                        count: count
+                        count: count,
+                        transaksi: transaksi * (15 / 100)
                     })
                 })
             } else {
@@ -396,15 +467,51 @@ class OrderController extends Model {
                 $set: {
                     "user_order": null,
                     "canceled_from": courier_id
+                },
+                $addToSet: {
+                    "history_order": id
                 }
-            }, (err, result) => {
-                console.log('berhasi menghapus orderan si user');
+            }, async (err, result) => {
+
+                const notification_options = {
+                    priority: "high",
+                    timeToLive: 60 * 60 * 24
+                };
+
+                await Order.findOne({ _id: id }, async (error, orderData) => {
+
+                    await User.findOne({ _id: orderData.from }, async (error, userData) => {
+
+                        let message = {
+                            data: {
+                                title: 'Orderan Di Batalkan',
+                                subtext: moment().locale('id-ID').format('DD MMMM YYYY hh:mm'),
+                                dari: userData.fullname,
+                                alasan: orderData.alasan_user,
+                                type: 'ORDER_DIBATALKAN_USER'
+                            }
+                        };
+
+                        await User.findOne({ _id: orderData.courier }, async (error, courierData) => {
+
+                            await admin.messaging().sendToDevice(courierData.device_token, message, notification_options)
+                                .then(async res => {
+                                    console.log('successfully send to device ', courierData.device_token);
+                                })
+                                .catch(err => {
+                                    console.log('error :: ', err);
+                                })
+                        })
+
+                    })
+                });
+
                 return res.json({
                     msg: 'success canceled'
                 })
             })
-        })
-    }
+        });
+    };
 
     async setCancelCourierOrder(req, res) {
 
@@ -417,15 +524,16 @@ class OrderController extends Model {
         await Order.updateOne({ _id: id }, {
             $set: {
                 "courier_cancel": true,
-                "status": true
+                "status": false
             }
-        }, (err, res1) => {
+        }, async (err, res1) => {
             console.log('error kirim alasan ,', err);
             console.log('berhasil kirim alasan ,', res1);
 
-            Order.findOne({ _id: id }, async (err, r) => {
+            await Order.findOne({ _id: id }, async (err, r) => {
 
                 if (Object.keys(r).length !== 0) {
+
                     await User.updateOne({ _id: r.courier }, {
                         $set: {
                             "active_order": null,
@@ -434,29 +542,54 @@ class OrderController extends Model {
                         $addToSet: {
                             "history_order": r._id
                         },
-                    }, (e1, r1) => {
+                    }, async (e1, r1) => {
                         console.log('courier status update error ? ', e1);
                         console.log('courier status update result ? ', r1)
+
+
+                        const notification_options = {
+                            priority: "high",
+                            timeToLive: 60 * 60 * 24
+                        };
+
+                        await Order.findOne({ _id: id }, async (error, orderData) => {
+
+                            await User.findOne({ _id: orderData.courier }, async (error, courierData) => {
+
+                                let message = {
+
+                                    data: {
+                                        title: 'Orderan Di Batalkan',
+                                        subtext: moment().locale('id-ID').format('DD MMMM YYYY hh:mm'),
+                                        dari: courierData.fullname,
+                                        alasan: "Dengan Suatu Alasan",
+                                        type: 'ORDER_DIBATALKAN_KURIR'
+                                    }
+                                };
+
+                                await User.findOne({ _id: orderData.from }, async (error, userData) => {
+
+                                    await admin.messaging().sendToDevice(userData.device_token, message, notification_options)
+                                        .then(async res => {
+                                            console.log('successfully send to device ', userData.device_token);
+                                        })
+                                        .catch(err => {
+                                            console.log('error :: ', err);
+                                        })
+                                })
+
+                            })
+                        });
+
+
+
+                        return res.send({
+                            error: false,
+                            msg: 'success canceled'
+                        })
                     })
 
-                    await User.updateOne({ _id: r.from }, {
-                        $set: {
-                            "user_order": null
-                        },
-                        $addToSet: {
-                            "history_order": r._id
-                        }
-                    }, (e2, r2) => {
-                        console.log('user status update error ? ', e2)
-                        console.log('user status update error ? ', r2)
-
-                    });
                 }
-            })
-
-
-            return res.send({
-                error: false
             })
         })
     }
@@ -581,7 +714,37 @@ class OrderController extends Model {
                 $addToSet: {
                     "history_order": r._id
                 }
-            }, (e2, r2) => {
+            }, async (e2, r2) => {
+
+                await Order.findOne({ _id: order_id }, async (error, orderData) => {
+
+                    await User.findOne({ _id: orderData.courier }, async (error, courierData) => {
+
+                        let message = {
+
+                            data: {
+                                title: 'Orderan Telah Sampai ke Penerima',
+                                subtext: moment().locale('id-ID').format('DD MMMM YYYY hh:mm'),
+                                dari: courierData.fullname,
+                                ongkir: String(orderData.ongkir),
+                                barang: orderData.barang_yg_dikirim,
+                                type: 'ORDERAN_SELESAI_DIKIRIM'
+                            }
+                        };
+
+                        await User.findOne({ _id: orderData.from }, async (error, userData) => {
+
+                            await admin.messaging().sendToDevice(userData.device_token, message, notification_options)
+                                .then(async res => {
+                                    console.log('successfully send to device ', userData.device_token);
+                                })
+                                .catch(err => {
+                                    console.log('error :: ', err);
+                                })
+                        })
+
+                    })
+                });
                 console.log('user status update error ? ', e2)
                 console.log('user status update error ? ', r2)
 
@@ -594,8 +757,9 @@ class OrderController extends Model {
     async setDeliverStatus(req, res, next) {
 
         let Order = super.order();
+        let User = super.user();
 
-        let { order_id, status, cancelable, picked_up } = req.body;
+        let { order_id, status, cancelable, picked_up, payload } = req.body;
 
         await Order.updateOne({ _id: order_id, status: false }, {
             $set: {
@@ -603,9 +767,44 @@ class OrderController extends Model {
                 "cancelable": cancelable,
                 "is_courier_picked_up": picked_up
             }
-        }, (err, resu) => {
+        }, async (err, resu) => {
+
+
             console.log('ERR :: ', err);
             console.log('Result :: ', resu);
+
+
+
+            if (Object.keys(resu).length !== 0) {
+
+
+                await Order.findOne({ _id: order_id }, async (err, orderData) => {
+
+                    let message = {
+                        data: {
+                            ...payload,
+                            subtext: moment().locale('id-ID').format('DD MMMM YYYY hh:mm'),
+                            brg: orderData.barang_yg_dikirim
+                        }
+                    };
+
+                    await User.findOne({ _id: orderData.from }, async (err, userData) => {
+
+                        await admin.messaging().sendToDevice(userData.device_token, message, notification_options)
+                            .then(res => {
+                                console.log('success send notif to device : ', userData.device_token);
+                            })
+                            .catch(err => {
+                                console.error('', err);
+                            })
+
+                    })
+
+                })
+            } else {
+                throw new Error(' data kosong ');
+            }
+
         })
     }
 
@@ -613,6 +812,7 @@ class OrderController extends Model {
 
 
         let Order = super.order();
+        let User = super.user();
 
         const { _id } = req.body;
 
@@ -620,9 +820,36 @@ class OrderController extends Model {
             $set: {
                 "kurir_accept": true
             }
-        }, (err, re) => {
-            console.log('ERR :: ', err);
-            console.log('Result :: ', re);
+        }, async (err, re) => {
+
+
+            await Order.findOne({ _id: _id }, async (err, orderData) => {
+
+                await User.findOne({ _id: orderData.courier }, async (err, courierData) => {
+
+                    let message = {
+
+                        data: {
+                            title: "Orderan di Terima Oleh " + courierData.fullname,
+                            subtext: moment().locale('id-ID').format('DD MMMM YYYY hh:mm'),
+                            kurir: courierData.fullname,
+                            no_hp: courierData.no_hp,
+                            type: "KURIR_ACCEPT_ORDER"
+                        }
+                    };
+
+                    await User.findOne({ _id: orderData.from }, async (err, userData) => {
+
+                        await admin.messaging().sendToDevice(userData.device_token, message, notification_options)
+                            .then(res => {
+                                console.log('success send notif to device : ', userData.device_token);
+                            })
+                            .catch(err => {
+                                console.error('', err);
+                            })
+                    })
+                })
+            })
 
             return res.json({
                 msg: 'success accepted'

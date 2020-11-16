@@ -69,7 +69,8 @@ const Users = new mongoose.Schema({
         default: false
     },
     verif_code: Number,
-    canceled_from: String
+    canceled_from: String,
+    device_token : String
 }, {
     timestamps: true
 })

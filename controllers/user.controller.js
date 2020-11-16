@@ -5,6 +5,7 @@ import fs from 'fs';
 import { isValidObjectId } from 'mongoose'
 import moment from 'moment';
 import nodemailer from 'nodemailer';
+import { admin } from '../firebase/firebase-config';
 
 
 class UserController extends Model {
@@ -167,22 +168,26 @@ class UserController extends Model {
 
         const User = super.user();
 
-        const { email, password } = req.body;
-        const token = uniqueString();
-        console.log(req.body);
+        const { email, password, token } = req.body;
+        const tokenA = uniqueString();
+
         User.findOne({ email }, (err, user) => {
             if (user) {
                 bcrypt.compare(password, user.password, (error, result) => {
                     if (result) {
                         return User.findOneAndUpdate({ email: email }, {
                             $set: {
-                                "token": token
+                                "token": tokenA,
+                                "device_token": token
                             }
                         }, (e, r) => {
-                            if (r)
+                            if (r) {
                                 return res.json({
-                                    token
+                                    tokenA
                                 })
+                            } else {
+                                return
+                            }
                         })
                     } else {
                         return res.json({
@@ -408,6 +413,60 @@ class UserController extends Model {
                 msg: 'success'
             })
         })
+    }
+
+    async updateDeviceToken(req, res) {
+
+        let User = super.user();
+
+        const notification_options = {
+            priority: "high",
+            timeToLive: 60 * 60 * 24
+        };
+
+
+        const { device_token, token } = req.body;
+
+        await User.updateOne({ token }, {
+            $set: {
+                "device_token": device_token
+            }
+        }, (err, res) => {
+            console.log('error update device token ?', err);
+            console.log('success update device token ?', res);
+        })
+
+        // return admin.messaging().sendToDevice(device_token, message, notification_options)
+        //     .then(res => {
+        //         console.log(res);
+
+        //         console.log('successfully send to device ', device_token);
+
+        //     })
+        //     .catch(err => {
+        //         console.log('error :: ', err);
+        //     })
+    }
+
+    async testing(req, res) {
+
+        let User = super.user();
+
+        const notification_options = {
+            priority: "high",
+            timeToLive: 60 * 60 * 24
+        };
+
+        const { device_token, message } = req.body;
+
+        return admin.messaging().sendToDevice(device_token, message, notification_options)
+            .then(res => {
+                console.log(res);
+                console.log('successfully send to device ', device_token);
+            })
+            .catch(err => {
+                console.log('error :: ', err);
+            })
     }
 }
 
