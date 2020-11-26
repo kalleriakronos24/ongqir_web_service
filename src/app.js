@@ -137,7 +137,7 @@ class App extends Route {
             .then(() => {
                 // start server
                 app.server.listen('8000', () => {
-                    console.log(`Started server on => http://${dev[0]}:${app.server.address().port} for Process Id ${process.pid}`);
+                    console.log(`Started server on => http://${dev[1]}:${app.server.address().port} for Process Id ${process.pid}`);
                 });
             })
             .catch((err) => {

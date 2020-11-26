@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon ./src/app.babel-register.js"
+    "dev": "nodemon ./src/app.babel-register.js",
+    "prod" : "node ./src/app.babel-register.js"
   },
   "directories": {
     "test": "test"
