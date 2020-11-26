@@ -3,19 +3,23 @@ import UserSchema from './users.model';
 import CourierSchema from './courier.model';
 import { OrderSchema } from './orders.model';
 import { BalanceSchema } from './balance.model';
+import BankSchema from './bank.model';
 
 class Model {
-    warung(){
+    warung() {
         return WarungModel;
     }
-    user(){
+    user() {
         return UserSchema;
     }
-    order(){
+    order() {
         return OrderSchema
     }
-    balance(){
+    balance() {
         return BalanceSchema
+    }
+    bank() {
+        return BankSchema
     }
 }
 

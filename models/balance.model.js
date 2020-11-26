@@ -9,14 +9,19 @@ const BalanceModel = new mongoose.Schema({
         ref: 'User'
     },
     bukti_transfer: String,
-    status : {
-        type : Boolean,
-        default : false
+    status: {
+        type: Boolean,
+        default: false
     },
-    reference_id : Number,
-    amount : Number,
+    reference_id: Number,
+    amount: Number,
+    ke: Object,
+    rejected: {
+        type: Boolean,
+        default: false
+    }
 }, {
-    timestamps : true
+    timestamps: true
 });
 
 export const BalanceSchema = mongoose.model('balance', BalanceModel);

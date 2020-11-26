@@ -6,22 +6,27 @@ import UserController from './user.controller';
 import { OrderController } from './order.controller';
 import CourierController from './courier.controller';
 import BalanceController from './balance.controller';
+import BankController from './bank.controller';
+
 
 class Controller {
-    warung(){
+    warung() {
         return new WarungController();
     }
-    user(){
+    user() {
         return new UserController();
     }
-    order(){
+    order() {
         return new OrderController();
     }
-    courier(){
+    courier() {
         return new CourierController();
     }
-    balance(){
+    balance() {
         return new BalanceController();
+    }
+    bank() {
+        return new BankController();
     }
 }
 

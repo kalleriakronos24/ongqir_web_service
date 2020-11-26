@@ -10,7 +10,9 @@ class BalanceController extends Model {
         let User = super.user();
 
 
-        let { token, ref } = req.body;
+        let { token, ref, ke } = req.body;
+
+        let ke_rek_kami = JSON.parse(ke);
 
         const uri = req.protocol + '://' + req.get('host');
         console.log('current URL ', req.body);
@@ -29,6 +31,7 @@ class BalanceController extends Model {
                     bukti_transfer: fotoBuktiTransfer || null,
                     courier_id: data._id,
                     reference_id: ref,
+                    ke: ke_rek_kami
                 })
                     .then(result => {
                         console.log('request add balance added :: ', result);
@@ -131,7 +134,7 @@ class BalanceController extends Model {
 
         let Balance = super.balance();
 
-        return Balance.find({ status: true })
+        return Balance.find({ status: true, rejected: false })
             .populate('courier_id')
             .exec((err, result) => {
                 console.log('error ? ::', err);
@@ -139,6 +142,40 @@ class BalanceController extends Model {
                     return res.json([])
                 return res.json(result);
             })
+    };
+
+    async getAllRejectedRequestWallet(req, res) {
+
+        let Balance = super.balance();
+
+        return Balance.find({ status: true, rejected: true })
+            .populate('courier_id')
+            .exec((err, result) => {
+                console.log('error ? ::', err);
+                if (result.length === 0)
+                    return res.json([])
+                return res.json(result);
+            })
+    };
+
+    async rejectRequestWallet(req, res) {
+
+        let Balance = super.balance();
+
+        const { id } = req.body;
+        console.log("REQ BODY REJECT WALLET", req.body);
+        await Balance.updateOne({ _id: id }, {
+            $set: {
+                "rejected": true,
+                "status": true,
+                "amount" : 0
+            }
+        }, async (err, re1s) => {
+
+            return res.json({
+                msg: "success"
+            })
+        });
     }
 
     async acceptRequestAddWallet(req, res) {

@@ -52,7 +52,9 @@ class BalanceRoute extends Controller {
             router.post('/accept/request/wallet', super.balance().acceptRequestAddWallet),
             router.get('/all/done/request/topup/wallet', super.balance().getAllDoneRequestWallet),
             router.get('/get/request/add/wallet/:token', super.balance().getUserRequestWallet),
-            router.get('/get/user/transaction/done/:token', super.balance().getUserTransactionDone)
+            router.get('/get/user/transaction/done/:token', super.balance().getUserTransactionDone),
+            router.post('/reject-request-add-wallet', super.balance().rejectRequestWallet),
+            router.get('/get/all/rejected/request', super.balance().getAllRejectedRequestWallet)
         ]
     }
 }
