@@ -33,15 +33,15 @@ class BalanceController extends Model {
                     reference_id: ref,
                     ke: ke_rek_kami
                 })
-                    .then(result => {
+                    .then(async result => {
                         console.log('request add balance added :: ', result);
-                        return res.json({
+                        return await res.json({
                             error: false,
                             msg: 'request to add wallet successfully'
                         })
                     })
-                    .catch(error => {
-                        return res.json({
+                    .catch(async error => {
+                        return await res.json({
                             error: true,
                             msg: 'request to add wallet failed'
                         })

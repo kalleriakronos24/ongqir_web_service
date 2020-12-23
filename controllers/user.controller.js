@@ -31,7 +31,7 @@ class UserController extends Model {
             if (user) {
 
                 return res.json({
-                    msg: 'User Already Exist',
+                    msg: 'Email Telah Digunakan',
                     code: 1
                 })
             }
@@ -84,7 +84,7 @@ class UserController extends Model {
                     html: `<p><b>Hello</b> dari Ongqir </p>
                             <p>Klik tombol verifikasi ini untuk memverifikasi : <br/><br/>
                             <br/>
-                            <a style="border: 1px solid black; padding: 12px; background-color:blue; cursor:pointer; border-radius: 6px; text-align:center; color:white; font-size: 24; font-weight:bold;" href="http://192.168.43.178:8000/verif?email=${email}">Verifikasi</a>
+                            <a style="border: 1px solid black; padding: 12px; background-color:blue; cursor:pointer; border-radius: 6px; text-align:center; color:white; font-size: 24; font-weight:bold;" href="https://www.ongqir-backend.com/verif?email=${email}">Verifikasi</a>
                             </p>`,
                 }
 
@@ -243,7 +243,7 @@ class UserController extends Model {
 
             const { token } = req.params;
 
-            await User.findOne({ token: token }, { fullname: 1, type: 1, token: 1, active_order: 1, courier_info: 1, no_hp: 1, user_order: 1, foto_diri: 1, foto_ktp: 1, email: 1 }, async (err, result) => {
+            await User.findOne({ token: token }, { verified: 1, fullname: 1, type: 1, token: 1, active_order: 1, courier_info: 1, no_hp: 1, user_order: 1, foto_diri: 1, foto_ktp: 1, email: 1 }, async (err, result) => {
 
                 let successOrderUser = 0;
 
@@ -284,7 +284,8 @@ class UserController extends Model {
                             user_order: result.user_order,
                             token: result.token,
                             no_hp: result.no_hp,
-                            fotoDiri: result.foto_diri
+                            fotoDiri: result.foto_diri,
+				type : result.type
                         }
                     })
                 } else {
@@ -302,12 +303,14 @@ class UserController extends Model {
                         msg: 'courier data fetched from server',
                         error: false,
                         data: {
+				type : result.type,
                             fullname: result.fullname,
                             active_order: result.active_order,
                             no_hp: result.no_hp,
                             fotoDiri: result.foto_diri,
                             courier_info: result.courier_info,
-                            email: result.email
+                            email: result.email,
+				verified: result.verified
                         }
                     })
                 }
@@ -325,7 +328,7 @@ class UserController extends Model {
         let User = super.user();
 
         try {
-            return User.find({ type: 'courier' }, { fullname: 1, alamat: 1, email: 1, active_order: 1, foto_diri: 1, foto_ktp: 1, courier_info: 1 }, (err, result) => {
+            await User.find({ type: 'courier' }, { verified: 1, foto_stnk: 1, fullname: 1, alamat: 1, email: 1, active_order: 1, foto_diri: 1, foto_ktp: 1, courier_info: 1 }, (err, result) => {
                 return res.json(result);
             }, (error, r1) => {
                 console.log('has error : ? ,', error);
@@ -467,6 +470,95 @@ class UserController extends Model {
             .catch(err => {
                 console.log('error :: ', err);
             })
+    }
+
+	async resendVerifEmail(req, res) {
+
+        // include database
+        let User = super.user();
+
+
+        // constants and variaables
+        const { email } = req.body;
+
+        // query
+
+        nodemailer.createTestAccount(async (err, account) => {
+            if (err) {
+                console.error('Failed to create a testing account');
+                console.error(err);
+                return process.exit(1);
+            }
+            console.log('Credentials obtained, sending message...');
+
+            // NB! Store the account object values somewhere if you want
+            // to re-use the same account for future mail deliveries
+
+            // Create a SMTP transporter object
+            let transporter = nodemailer.createTransport(
+                {
+                    auth: {
+                        user: "ongqir@gmail.com",
+                        pass: "Vanhallen5150!@#"
+                    },
+                    logger: true,
+                    debug: false, // include SMTP traffic in the logs
+                    service: 'gmail',
+                    secure: true
+                },
+                {
+                    // default message fields
+                    // sender info
+                    from: 'ongqir@gmail.com'
+                }
+            );
+
+            // Message object
+
+            let message = {
+                // Comma separated list of recipients
+                to: email,
+
+                // Subject of the message
+                subject: 'Onqir Email Verifikasi',
+
+                // plaintext body
+
+                // HTML body
+                html: `<p><b>Hello</b> dari Ongqir </p>
+                            <p>Klik tombol verifikasi ini untuk memverifikasi : <br/><br/>
+                            <br/>
+                            <a style="border: 1px solid black; padding: 12px; background-color:blue; cursor:pointer; border-radius: 6px; text-align:center; color:white; font-size: 24; font-weight:bold;" href="https://www.ongqir-backend.com/verif?email=${email}">Verifikasi</a>
+                            </p>`,
+            };
+
+
+            transporter.sendMail(message, (error, info) => {
+
+                if (error) {
+                    console.log('Error occurred');
+                    console.log(error.message);
+
+                    res.json({
+                        msg: "Gagal mengirim link verifikasi ke email anda, coba lagi",
+                        code: 1
+                    })
+                    return process.exit(1);
+                }
+
+                console.log('Message sent successfully!');
+                console.log(nodemailer.getTestMessageUrl(info));
+
+                res.json({
+                    msg: "link verifikasi telah dikirim ulang ke email " + email,
+                    code: 0
+                })
+
+
+                // only needed when using pooled connections
+                transporter.close();
+            });
+        });
     }
 }
 
