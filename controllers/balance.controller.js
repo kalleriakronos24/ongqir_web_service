@@ -14,7 +14,7 @@ class BalanceController extends Model {
 
         let ke_rek_kami = JSON.parse(ke);
 
-        const uri = req.protocol + '://' + req.get('host');
+        const uri = 'https' + '://' + req.get('host');
         console.log('current URL ', req.body);
 
         const fotoBuktiTransfer = req.files ? `${uri}/public/bukti_transfer/${req.files['buktiTransfer'][0].filename}` : null;

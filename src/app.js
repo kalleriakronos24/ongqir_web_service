@@ -133,6 +133,7 @@ class App extends Route {
         // let uri = 'mongodb+srv://mad_31:pusamania94@cluster0.x1riy.mongodb.net/cafsend?retryWrites=true&w=majority'
         let uri = process.env.MONGO_URI
         let dev = ['192.168.43.178', 'localhost'];
+
         mongoose.connect(uri, options)
             .then(() => {
                 // start server
@@ -143,8 +144,6 @@ class App extends Route {
             .catch((err) => {
                 throw new Error(err)
             })
-
-
 
         // in case of an error
         app.on('error', (appErr, appCtx) => {

@@ -16,13 +16,13 @@ class UserController extends Model {
 
         const { name, email, type, password, nohp } = req.body;
 
-        const uri = req.protocol + '://' + req.get('host');
+        const uri = 'https' + '://' + req.get('host');
 
         const fotoKtpFilePath = req.files['fotoKtp'] !== undefined ? `${uri}/public/foto/${req.files['fotoKtp'][0].filename}` : null;
         const fotoDiriFilePath = req.files['fotoDiri'] !== undefined ? `${uri}/public/foto/${req.files['fotoDiri'][0].filename}` : null;
         const fotoSTNKFilePath = req.files['fotoSTNK'] !== undefined ? `${uri}/public/foto/${req.files['fotoSTNK'][0].filename}` : null;
 
-        User.findOne({ email }, async (err, user) => {
+        await User.findOne({ email }, async (err, user) => {
 
             // error check
             console.log('User Find Error:: ', err);
@@ -285,7 +285,7 @@ class UserController extends Model {
                             token: result.token,
                             no_hp: result.no_hp,
                             fotoDiri: result.foto_diri,
-				type : result.type
+                            type: result.type
                         }
                     })
                 } else {
@@ -303,14 +303,14 @@ class UserController extends Model {
                         msg: 'courier data fetched from server',
                         error: false,
                         data: {
-				type : result.type,
+                            type: result.type,
                             fullname: result.fullname,
                             active_order: result.active_order,
                             no_hp: result.no_hp,
                             fotoDiri: result.foto_diri,
                             courier_info: result.courier_info,
                             email: result.email,
-				verified: result.verified
+                            verified: result.verified
                         }
                     })
                 }
@@ -472,7 +472,7 @@ class UserController extends Model {
             })
     }
 
-	async resendVerifEmail(req, res) {
+    async resendVerifEmail(req, res) {
 
         // include database
         let User = super.user();
