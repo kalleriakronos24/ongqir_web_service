@@ -7,6 +7,7 @@ import { OrderController } from './order.controller';
 import CourierController from './courier.controller';
 import BalanceController from './balance.controller';
 import BankController from './bank.controller';
+import GoogleMapKeyController from './map.controller';
 
 
 class Controller {
@@ -27,6 +28,9 @@ class Controller {
     }
     bank() {
         return new BankController();
+    }
+    gmap() {
+        return new GoogleMapKeyController();
     }
 }
 

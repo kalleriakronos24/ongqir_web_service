@@ -13,7 +13,7 @@ class SocketController extends Model {
         let User = super.user();
         let Order = super.order();
 
-
+//
         return User.findOne({ token: token, type: 'courier' }, async (error, result) => {
             console.log('is there an error ? :: ', error);
             if (result) {

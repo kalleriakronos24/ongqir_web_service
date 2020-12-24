@@ -560,6 +560,45 @@ class UserController extends Model {
             });
         });
     }
+
+    async changePassword(req,res) {
+
+        const User = super.user();
+
+        console.log('change password body ', req.body);
+        const { email, old_password, new_password } = req.body;
+
+        await User.findOne({ email }, async (err,userData) => {
+
+            await bcrypt.compare(old_password, userData.password, async (error,cb) => {
+
+                if (cb) {
+
+                    const user_new_password = bcrypt.hashSync(new_password, 10);
+
+                    await User.updateOne({ email }, {
+                        $set : {
+                            "password" : user_new_password
+                        }
+                    }, (err,result) => {
+                        
+                        if(err) return;
+
+                        return res.json({
+                            msg : 'password changed'
+                        })
+                    })
+
+                } else {
+
+                    return res.json({
+                        msg : 'password invalid'
+                    })
+                }
+
+            })
+        })
+    }
 }
 
 export default UserController;

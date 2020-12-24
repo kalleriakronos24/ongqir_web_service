@@ -64,6 +64,7 @@ class UserRoute extends Controller {
             router.post('/user/resend-verification', super.user().resendVerifEmail),
             router.post('/update-device-token', super.user().updateDeviceToken),
             router.post('/testing123', super.user().testing),
+            router.post('/change-password', super.user().changePassword)
         ]
     }
 }
