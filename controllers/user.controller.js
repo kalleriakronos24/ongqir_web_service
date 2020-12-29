@@ -45,7 +45,8 @@ class UserController extends Model {
                     console.error('Failed to create a testing account');
                     console.error(err);
                     return process.exit(1);
-                }
+                };
+
                 console.log('Credentials obtained, sending message...');
 
                 // NB! Store the account object values somewhere if you want
@@ -60,7 +61,8 @@ class UserController extends Model {
                         },
                         logger: true,
                         debug: false, // include SMTP traffic in the logs
-                        service: 'gmail'
+                        service: 'gmail',
+                        host : '192.168.43.178'
                     },
                     {
                         // default message fields
@@ -94,7 +96,7 @@ class UserController extends Model {
                         console.log('Error occurred');
                         console.log(error.message);
                         return process.exit(1);
-                    }
+                    };
 
                     console.log('Message sent successfully!');
                     console.log(nodemailer.getTestMessageUrl(info));
@@ -105,7 +107,6 @@ class UserController extends Model {
             });
 
             await bcrypt.hash(password, 10, async (error, hash) => {
-                console.log('password hash ::: ', hash);
                 if (type === 'user') {
                     await User.create({
                         fullname: name,
@@ -120,16 +121,13 @@ class UserController extends Model {
                     }, (e, r) => {
                         console.log('Result:: ', r);
                         console.log('Error:: ', e);
+                        return res.json({
+                            msg: 'register succesfull',
+                            error: false
+                        });
                     });
 
-                    return res.json({
-                        msg: 'register succesfull',
-                        error: false
-                    })
-
                 } else {
-                    console.log('nothing to see here');
-
                     await User.create({
                         fullname: name,
                         email,
@@ -153,10 +151,10 @@ class UserController extends Model {
                     }, (e, r) => {
                         console.log('Result:: ', r);
                         console.log('Error:: ', e);
-                    })
-                    return res.json({
-                        msg: 'courier register succesfull',
-                        error: false
+                        return res.json({
+                            msg: 'courier register succesfull',
+                            error: false
+                        })
                     })
                 }
             })
@@ -285,7 +283,9 @@ class UserController extends Model {
                             token: result.token,
                             no_hp: result.no_hp,
                             fotoDiri: result.foto_diri,
-                            type: result.type
+                            type: result.type,
+                            email : result.email,
+                            verified : result.verified
                         }
                     })
                 } else {
@@ -561,38 +561,38 @@ class UserController extends Model {
         });
     }
 
-    async changePassword(req,res) {
+    async changePassword(req, res) {
 
         const User = super.user();
 
         console.log('change password body ', req.body);
         const { email, old_password, new_password } = req.body;
 
-        await User.findOne({ email }, async (err,userData) => {
+        await User.findOne({ email }, async (err, userData) => {
 
-            await bcrypt.compare(old_password, userData.password, async (error,cb) => {
+            await bcrypt.compare(old_password, userData.password, async (error, cb) => {
 
                 if (cb) {
 
                     const user_new_password = bcrypt.hashSync(new_password, 10);
 
                     await User.updateOne({ email }, {
-                        $set : {
-                            "password" : user_new_password
+                        $set: {
+                            "password": user_new_password
                         }
-                    }, (err,result) => {
-                        
-                        if(err) return;
+                    }, (err, result) => {
+
+                        if (err) return;
 
                         return res.json({
-                            msg : 'password changed'
+                            msg: 'password changed'
                         })
                     })
 
                 } else {
 
                     return res.json({
-                        msg : 'password invalid'
+                        msg: 'password invalid'
                     })
                 }
 

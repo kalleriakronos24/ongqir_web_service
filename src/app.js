@@ -201,29 +201,28 @@ class App extends Route {
         // create the socket
         io.on('connection', (socket) => {
 
-            const updateStatus = (id, bool, socket_id) => new UserController().setStatusUserToOnline(id, bool, socket_id)
-            const emitOrderToCourier = (token) => new SocketController().getCurrentOrderCourier(token);
+            // const updateStatus = (id, bool, socket_id) => new UserController().setStatusUserToOnline(id, bool, socket_id)
 
-            socket.on('userConnected', (token) => {
-
-                if (token !== undefined || token !== null || token !== "") {
-                    socket._id = token;
-                    console.log(token + ' connected');
-                    updateStatus(token, true, socket.id);
-                } else {
-                    console.log('token invalid, return');
-                }
-            });
+            // socket.on('userConnected', (token) => {
+            //     if (token !== undefined || token !== null || token !== "") {
+            //         socket._id = token;
+            //         console.log(token + ' connected');
+            //         updateStatus(token, true, socket.id);
+            //     } else {
+            //         console.log('token invalid, return');
+            //     }
+            // })
 
 
-            // fired up when the user disconnected
-            socket.on('disconnect', () => {
-                console.log('someone disconnected');
-                if (socket._id) {
-                    console.log(socket._id + ' disconnected');
-                    updateStatus(socket._id, false, socket.id);
-                }
-            })
+            // // fired up when the user disconnected
+            // socket.on('disconnect', () => {
+            //     console.log('someone disconnected');
+            //     if (socket._id) {
+            //         console.log(socket._id + ' disconnected');
+            //         updateStatus(socket._id, false, socket.id);
+            //     }
+            // });
+            
         })
     };
 
