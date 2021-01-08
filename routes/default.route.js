@@ -8,6 +8,7 @@ import { OrderRoute } from './order.routes';
 import BalanceRoute from './balance.route';
 import BankRoute from './bank.routes';
 import GmapRouter from './gmap.route';
+import StatisticRoutes from './statistic.routes';
 
 class Route {
     route() {
@@ -18,7 +19,8 @@ class Route {
             new OrderRoute().route(),
             new BalanceRoute().route(),
             new BankRoute().route(),
-            new GmapRouter().route()
+            new GmapRouter().route(),
+            new StatisticRoutes().route()
         ]
     }
 }

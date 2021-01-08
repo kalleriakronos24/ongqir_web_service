@@ -3,7 +3,7 @@ import bcrypt from 'bcrypt';
 import uniqueString from 'unique-string';
 import fs from 'fs';
 import { isValidObjectId } from 'mongoose'
-import moment from 'moment';
+import moment from 'moment-timezone';
 import nodemailer from 'nodemailer';
 import { admin } from '../firebase/firebase-config';
 
@@ -32,7 +32,6 @@ class UserController extends Model {
 
                 return res.json({
                     msg: 'Email Telah Digunakan',
-                    code: 1
                 })
             }
 
@@ -44,6 +43,12 @@ class UserController extends Model {
                 if (err) {
                     console.error('Failed to create a testing account');
                     console.error(err);
+
+                    res.json({
+                        msg: "Gagal mengirim link verifikasi ke email anda, coba lagi",
+                        code: 1
+                    })
+
                     return process.exit(1);
                 };
 
@@ -95,12 +100,23 @@ class UserController extends Model {
                     if (error) {
                         console.log('Error occurred');
                         console.log(error.message);
+
+                        res.json({
+                            msg: "Gagal mengirim link verifikasi ke email anda, coba lagi",
+                            code: 1
+                        })
+
                         return process.exit(1);
                     };
 
                     console.log('Message sent successfully!');
                     console.log(nodemailer.getTestMessageUrl(info));
 
+                    res.json({
+                        msg: "link verifikasi telah dikirim ulang ke email " + email,
+                        code: 0
+                    })
+                    
                     // only needed when using pooled connections
                     transporter.close();
                 });
@@ -116,15 +132,11 @@ class UserController extends Model {
                         token: 0,
                         foto_diri: fotoDiriFilePath,
                         no_hp: nohp,
-                        account_created: moment().locale('id-ID').format('DD MMMM YYYY hh:mm'),
+                        account_created: moment().tz('Asia/Kuala_Lumpur').format('DD MMMM YYYY hh:mm'),
                         verif_code: num
                     }, (e, r) => {
                         console.log('Result:: ', r);
                         console.log('Error:: ', e);
-                        return res.json({
-                            msg: 'register succesfull',
-                            error: false
-                        });
                     });
 
                 } else {
@@ -146,15 +158,11 @@ class UserController extends Model {
                             },
                             balance: 0
                         },
-                        account_created: moment().locale('id-ID').format('DD MMMM YYYY hh:mm'),
+                        account_created: moment().tz('Asia/Kuala_Lumpur').format('DD MMMM YYYY hh:mm'),
                         verif_code: num
                     }, (e, r) => {
                         console.log('Result:: ', r);
                         console.log('Error:: ', e);
-                        return res.json({
-                            msg: 'courier register succesfull',
-                            error: false
-                        })
                     })
                 }
             })
@@ -477,7 +485,6 @@ class UserController extends Model {
         // include database
         let User = super.user();
 
-
         // constants and variaables
         const { email } = req.body;
 
@@ -487,6 +494,12 @@ class UserController extends Model {
             if (err) {
                 console.error('Failed to create a testing account');
                 console.error(err);
+
+                res.json({
+                    msg: "Gagal mengirim link verifikasi ke email anda, coba lagi",
+                    code: 1
+                })
+
                 return process.exit(1);
             }
             console.log('Credentials obtained, sending message...');

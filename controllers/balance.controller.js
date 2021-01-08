@@ -1,5 +1,5 @@
 import Model from '../models/default.model';
-import moment from 'moment';
+import moment from 'moment-timezone';
 
 class BalanceController extends Model {
 
@@ -26,8 +26,8 @@ class BalanceController extends Model {
                 })
             } else {
                 return await Balance.create({
-                    id: moment().locale('id-ID').format('DD/MM/YY') + '/' + Math.round(Math.random() * 9999),
-                    date: moment().locale('id-ID').format('DD/MM/YY HH:MM'),
+                    id: moment().tz('Asia/Kuala_Lumpur').format('DD/MM/YY') + '/' + Math.round(Math.random() * 9999),
+                    date: moment().tz('Asia/Kuala_Lumpur').format('DD/MM/YY HH:MM'),
                     bukti_transfer: fotoBuktiTransfer || null,
                     courier_id: data._id,
                     reference_id: ref,
@@ -57,7 +57,6 @@ class BalanceController extends Model {
         return Balance.find({ status: false })
             .populate('courier_id')
             .exec((err, result) => {
-                console.log('error ? ::', err);
                 if (result.length === 0)
                     return res.json([])
                 return res.json(result);

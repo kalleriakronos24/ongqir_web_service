@@ -3,7 +3,7 @@ import uniqueString from 'unique-string';
 import { isValidObjectId } from 'mongoose'
 import isPointWithinRadius from 'geolib/es/isPointWithinRadius';
 import findNearest from 'geolib/es/findNearest';
-import moment from 'moment';
+import moment from 'moment-timezone';
 const socketIo = require('socket.io');
 
 class SocketController extends Model {

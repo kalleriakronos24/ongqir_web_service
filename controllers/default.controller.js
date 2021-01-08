@@ -8,6 +8,7 @@ import CourierController from './courier.controller';
 import BalanceController from './balance.controller';
 import BankController from './bank.controller';
 import GoogleMapKeyController from './map.controller';
+import StatisticController from './statistic.controller';
 
 
 class Controller {
@@ -31,6 +32,9 @@ class Controller {
     }
     gmap() {
         return new GoogleMapKeyController();
+    }
+    statistic() {
+        return new StatisticController()
     }
 }
 

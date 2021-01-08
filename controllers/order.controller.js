@@ -3,7 +3,7 @@ import uniqueString from 'unique-string';
 import { isValidObjectId } from 'mongoose'
 import isPointWithinRadius from 'geolib/es/isPointWithinRadius';
 import findNearest from 'geolib/es/findNearest';
-import moment from 'moment';
+import moment from 'moment-timezone';
 const socketIo = require('socket.io');
 import {
     admin,
@@ -16,13 +16,13 @@ const addOrderToCourier = (a, db, dbUser, data, item, userid, pickupDetail, ongk
     const User = dbUser;
 
     return Order.create({
-        order_id: moment().locale('id-ID').format('DD/MM/YY') + '/' + Math.round(Math.random() * 9999),
+        order_id: moment().tz('Asia/Kuala_Lumpur').format('DD/MM/YY') + '/' + Math.round(Math.random() * 9999),
         from: userid,
         courier: data._id,
         penerima: item,
         pengirim: pickupDetail,
         ongkir: ongkir,
-        order_date: moment().locale('id-ID').format('DD MMMM YYYY hh:mm'),
+        order_date: moment().tz('Asia/Kuala_Lumpur').format('DD MMMM YYYY hh:mm'),
         barang_yg_dikirim: brg,
         distance: distance
     })
@@ -118,7 +118,7 @@ class OrderController extends Model {
                                 let message = {
                                     data: {
                                         title: 'Orderan Masuk',
-                                        subtext: moment().locale('id-ID').format('DD MMMM YYYY hh:mm'),
+                                        subtext: moment().tz('Asia/Kuala_Lumpur').format('DD MMMM YYYY hh:mm'),
                                         dari: result.fullname,
                                         ongkir: String(ongkir),
                                         km: String(distance),
@@ -181,7 +181,7 @@ class OrderController extends Model {
                                 let message = {
                                     data: {
                                         title: 'Orderan Masuk',
-                                        subtext: moment().locale('id-ID').format('DD MMMM YYYY hh:mm'),
+                                        subtext: moment().tz('Asia/Kuala_Lumpur').format('DD MMMM YYYY hh:mm'),
                                         dari: result.fullname,
                                         ongkir: String(ongkir),
                                         km: String(distance),
@@ -485,7 +485,7 @@ class OrderController extends Model {
                         let message = {
                             data: {
                                 title: 'Orderan Di Batalkan',
-                                subtext: moment().locale('id-ID').format('DD MMMM YYYY hh:mm'),
+                                subtext: moment().tz('Asia/Kuala_Lumpur').format('DD MMMM YYYY hh:mm'),
                                 dari: userData.fullname,
                                 alasan: orderData.alasan_user,
                                 type: 'ORDER_DIBATALKAN_USER'
@@ -560,7 +560,7 @@ class OrderController extends Model {
 
                                     data: {
                                         title: 'Orderan Di Batalkan',
-                                        subtext: moment().locale('id-ID').format('DD MMMM YYYY hh:mm'),
+                                        subtext: moment().tz('Asia/Kuala_Lumpur').format('DD MMMM YYYY hh:mm'),
                                         dari: courierData.fullname,
                                         alasan: "Dengan Suatu Alasan",
                                         type: 'ORDER_DIBATALKAN_KURIR'
@@ -695,7 +695,7 @@ class OrderController extends Model {
                     $set: {
                         "status": true,
                         'delivery_status': 'barang sudah diterima',
-                        "waktu_barang_terkirim": moment().locale('id-ID').format('DD MMMM YYYY hh:mm')
+                        "waktu_barang_terkirim": moment().tz('Asia/Kuala_Lumpur').format('DD MMMM YYYY hh:mm')
                     }
                 }, async (err, resu) => {
                     console.log('order status update error ? ', err);
@@ -724,7 +724,7 @@ class OrderController extends Model {
 
                             data: {
                                 title: 'Orderan Telah Sampai ke Penerima',
-                                subtext: moment().locale('id-ID').format('DD MMMM YYYY hh:mm'),
+                                subtext: moment().tz('Asia/Kuala_Lumpur').format('DD MMMM YYYY hh:mm'),
                                 dari: courierData.fullname,
                                 ongkir: String(orderData.ongkir),
                                 barang: orderData.barang_yg_dikirim,
@@ -783,7 +783,7 @@ class OrderController extends Model {
                     let message = {
                         data: {
                             ...payload,
-                            subtext: moment().locale('id-ID').format('DD MMMM YYYY hh:mm'),
+                            subtext: moment().tz('Asia/Kuala_Lumpur').format('DD MMMM YYYY hh:mm'),
                             brg: orderData.barang_yg_dikirim
                         }
                     };
@@ -831,7 +831,7 @@ class OrderController extends Model {
 
                         data: {
                             title: "Orderan di Terima Oleh " + courierData.fullname,
-                            subtext: moment().locale('id-ID').format('DD MMMM YYYY hh:mm'),
+                            subtext: moment().tz('Asia/Kuala_Lumpur').format('DD MMMM YYYY hh:mm'),
                             kurir: courierData.fullname,
                             no_hp: courierData.no_hp,
                             type: "KURIR_ACCEPT_ORDER"
