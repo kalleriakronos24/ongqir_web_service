@@ -1,5 +1,4 @@
 import mongoose, { Schema } from 'mongoose';
-import moment from 'moment-timezone';
 
 const BalanceModel = new mongoose.Schema({
     id: String,

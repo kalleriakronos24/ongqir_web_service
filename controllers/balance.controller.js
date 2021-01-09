@@ -27,7 +27,7 @@ class BalanceController extends Model {
             } else {
                 return await Balance.create({
                     id: moment().tz('Asia/Kuala_Lumpur').format('DD/MM/YY') + '/' + Math.round(Math.random() * 9999),
-                    date: moment().tz('Asia/Kuala_Lumpur').format('DD/MM/YY HH:MM'),
+                    date: moment().tz('Asia/Kuala_Lumpur').format('DD/MM/YY HH:mm'),
                     bukti_transfer: fotoBuktiTransfer || null,
                     courier_id: data._id,
                     reference_id: ref,

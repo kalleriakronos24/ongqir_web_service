@@ -22,7 +22,7 @@ const addOrderToCourier = (a, db, dbUser, data, item, userid, pickupDetail, ongk
         penerima: item,
         pengirim: pickupDetail,
         ongkir: ongkir,
-        order_date: moment().tz('Asia/Kuala_Lumpur').format('DD MMMM YYYY hh:mm'),
+        order_date: moment().tz('Asia/Kuala_Lumpur').format('DD MMMM YYYY HH:mm'),
         barang_yg_dikirim: brg,
         distance: distance
     })
@@ -118,7 +118,7 @@ class OrderController extends Model {
                                 let message = {
                                     data: {
                                         title: 'Orderan Masuk',
-                                        subtext: moment().tz('Asia/Kuala_Lumpur').format('DD MMMM YYYY hh:mm'),
+                                        subtext: moment().tz('Asia/Kuala_Lumpur').format('DD MMMM YYYY HH:mm'),
                                         dari: result.fullname,
                                         ongkir: String(ongkir),
                                         km: String(distance),
@@ -181,7 +181,7 @@ class OrderController extends Model {
                                 let message = {
                                     data: {
                                         title: 'Orderan Masuk',
-                                        subtext: moment().tz('Asia/Kuala_Lumpur').format('DD MMMM YYYY hh:mm'),
+                                        subtext: moment().tz('Asia/Kuala_Lumpur').format('DD MMMM YYYY HH:mm'),
                                         dari: result.fullname,
                                         ongkir: String(ongkir),
                                         km: String(distance),
@@ -485,7 +485,7 @@ class OrderController extends Model {
                         let message = {
                             data: {
                                 title: 'Orderan Di Batalkan',
-                                subtext: moment().tz('Asia/Kuala_Lumpur').format('DD MMMM YYYY hh:mm'),
+                                subtext: moment().tz('Asia/Kuala_Lumpur').format('DD MMMM YYYY HH:mm'),
                                 dari: userData.fullname,
                                 alasan: orderData.alasan_user,
                                 type: 'ORDER_DIBATALKAN_USER'
@@ -560,7 +560,7 @@ class OrderController extends Model {
 
                                     data: {
                                         title: 'Orderan Di Batalkan',
-                                        subtext: moment().tz('Asia/Kuala_Lumpur').format('DD MMMM YYYY hh:mm'),
+                                        subtext: moment().tz('Asia/Kuala_Lumpur').format('DD MMMM YYYY HH:mm'),
                                         dari: courierData.fullname,
                                         alasan: "Dengan Suatu Alasan",
                                         type: 'ORDER_DIBATALKAN_KURIR'
@@ -695,7 +695,7 @@ class OrderController extends Model {
                     $set: {
                         "status": true,
                         'delivery_status': 'barang sudah diterima',
-                        "waktu_barang_terkirim": moment().tz('Asia/Kuala_Lumpur').format('DD MMMM YYYY hh:mm')
+                        "waktu_barang_terkirim": moment().tz('Asia/Kuala_Lumpur').format('DD MMMM YYYY HH:mm')
                     }
                 }, async (err, resu) => {
                     console.log('order status update error ? ', err);
@@ -724,7 +724,7 @@ class OrderController extends Model {
 
                             data: {
                                 title: 'Orderan Telah Sampai ke Penerima',
-                                subtext: moment().tz('Asia/Kuala_Lumpur').format('DD MMMM YYYY hh:mm'),
+                                subtext: moment().tz('Asia/Kuala_Lumpur').format('DD MMMM YYYY HH:mm'),
                                 dari: courierData.fullname,
                                 ongkir: String(orderData.ongkir),
                                 barang: orderData.barang_yg_dikirim,
@@ -783,7 +783,7 @@ class OrderController extends Model {
                     let message = {
                         data: {
                             ...payload,
-                            subtext: moment().tz('Asia/Kuala_Lumpur').format('DD MMMM YYYY hh:mm'),
+                            subtext: moment().tz('Asia/Kuala_Lumpur').format('DD MMMM YYYY HH:mm'),
                             brg: orderData.barang_yg_dikirim
                         }
                     };
@@ -831,7 +831,7 @@ class OrderController extends Model {
 
                         data: {
                             title: "Orderan di Terima Oleh " + courierData.fullname,
-                            subtext: moment().tz('Asia/Kuala_Lumpur').format('DD MMMM YYYY hh:mm'),
+                            subtext: moment().tz('Asia/Kuala_Lumpur').format('DD MMMM YYYY HH:mm'),
                             kurir: courierData.fullname,
                             no_hp: courierData.no_hp,
                             type: "KURIR_ACCEPT_ORDER"

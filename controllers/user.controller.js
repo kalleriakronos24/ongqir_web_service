@@ -132,7 +132,7 @@ class UserController extends Model {
                         token: 0,
                         foto_diri: fotoDiriFilePath,
                         no_hp: nohp,
-                        account_created: moment().tz('Asia/Kuala_Lumpur').format('DD MMMM YYYY hh:mm'),
+                        account_created: moment().tz('Asia/Kuala_Lumpur').format('DD MMMM YYYY HH:mm'),
                         verif_code: num
                     }, (e, r) => {
                         console.log('Result:: ', r);
@@ -158,7 +158,7 @@ class UserController extends Model {
                             },
                             balance: 0
                         },
-                        account_created: moment().tz('Asia/Kuala_Lumpur').format('DD MMMM YYYY hh:mm'),
+                        account_created: moment().tz('Asia/Kuala_Lumpur').format('DD MMMM YYYY HH:mm'),
                         verif_code: num
                     }, (e, r) => {
                         console.log('Result:: ', r);
